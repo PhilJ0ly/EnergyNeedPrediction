@@ -5,21 +5,16 @@
 #The approach will be to store a range of indices associated with the sets for the specific methods
 
 import pandas as pd
-root='C:\\Users\\philj\\OneDrive - McGill University\\COMP\\MAIS\\PROJECT\\data\\'
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+root=os.getenv("ROOT")
 print("Working...")
 
 df = pd.read_csv(root+'Data_2019-2022.csv')
 
-# print(f'The length of the data set is', df.shape[0])
-# t = input("Choose Test Set Length:")
-# v = input("Choose validation Set Lenght:")
-
-# if (t+v>= df.shape[0]):
-#     raise Exception("incorrect input")
-
-
-#Static (SVR, DNN)
 df = df.dropna()
 pow = df.pop('Average Power Output (MW)')
 df['Average Power Output (MW)'] = pow

@@ -8,8 +8,11 @@ from selenium.webdriver.edge.service import Service
 from selenium.webdriver.common.by import By
 # import DateTime
 from time import sleep as slp
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
-s = Service('C:\\Users\\philj\\edgedriver_win32\\msedgedriver.exe')
+s = Service(os.getenv("DRIVER"))
 error = []
 
 def getData(station, stationName, year, month,t):

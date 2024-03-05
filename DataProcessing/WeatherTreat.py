@@ -7,8 +7,12 @@
 
 import pandas as pd
 import numpy as np
+from dotenv import load_dotenv
+import os
 
-root = 'C:\\Users\\philj\\Downloads\\'
+load_dotenv()
+
+root = os.getenv("DOWNLOAD")
 
 years = [i for i in range(2019, 2023)]
 months = ['{:02d}'.format(num) for num in range(1, 13)]

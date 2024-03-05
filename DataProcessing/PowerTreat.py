@@ -3,8 +3,12 @@
 
 #This combines the data from hourly power output data from hydro quebec
 import pandas as pd
+from dotenv import load_dotenv
+import os
 
-root = 'C:\\Users\\philj\\Downloads\\'
+load_dotenv()
+
+root = os.getenv("DOWNLOAD")
 
 years=[i for i in range(2019,2023)]
 
