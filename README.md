@@ -10,11 +10,20 @@ offered [_Hydro-Québec_](https://www.hydroquebec.com/documents-data/open-data/e
 chart of energy usage.
 
 ## Results
-| Performance Metrics  | SVR | DNN  | Sequential CNN | LSTM | GRU | _Prophet_ |
-| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
-| $R^2$  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-| MAE  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-| MSE  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+
+### Static Approach
+| Performance Metrics | SVR | DNN  | CNN |
+| --- | --- | --- | --- |
+| $R^2$  | Content Cell  | Content Cell  | Content Cell  | 
+| MAE  | Content Cell  | Content Cell  | Content Cell  |
+| MSE  | Content Cell  | Content Cell  | Content Cell  | 
+
+### Time Series Approach
+| Performance Metrics | LSTM | GRU | _Prophet_ | Sequential CNN | MIX1 |
+| --- | --- | --- | --- | --- | --- | 
+| $R^2$  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | 
+| MAE  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| MSE  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
 
 ## Models 
 + Support Vector Regression (SVR)
