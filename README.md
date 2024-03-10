@@ -10,28 +10,36 @@ offered [_Hydro-Québec_](https://www.hydroquebec.com/documents-data/open-data/e
 chart of energy usage.
 
 ## Results
-| Performance Metrics  | SVR | DNN  | LSTM | _Prophet_ |
-| ------------- | ------------- | ------------- | ------------- | ------------- |
-| $R^2$  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-| MAE  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-| MSE  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| Performance Metrics  | SVR | DNN  | Sequential CNN | LSTM | GRU | _Prophet_ |
+| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+| $R^2$  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| MAE  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| MSE  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
 
 ## Models 
 + Support Vector Regression (SVR)
   - Reasonning:
-  - Architecture adn Hyper-Parameters:
+  - Architecture and Hyper-Parameters:
   - Framework:
 + Deep Neural Network (DNN)
   - Reasonning:
-  - Architecture adn Hyper-Parameters:
+  - Architecture and Hyper-Parameters:
+  - Framework: 
++ Sequencial Convolutional Neural Network (CNN)
+  - Reasonning:
+  - Architecture and Hyper-Parameters:
   - Framework: 
 + Long Short-Term Memory Network (LSTM)
   - Reasonning:
-  - Architecture adn Hyper-Parameters:
+  - Architecture and Hyper-Parameters:
   - Framework:
++ Gated Recurrent Units (GRU)
+  - Reasonning:
+  - Architecture and Hyper-Parameters:
+  - Framework:  
 + [_Prophet_](https://doi.org/10.7287/peerj.preprints.3190v2)
   - Reasonning:
-  - Architecture adn Hyper-Parameters:
+  - Architecture and Hyper-Parameters:
   - Framework:
 
 ## Data Processing
