@@ -5,27 +5,18 @@ Energy consumption data since 2019, coupled with weather data from [_Climate Can
 will be used as features for a support vector regression, deep neural network, Long short-term memory network, gated recurrent units, and Convolutional neural network to predict energy demand.
 This project attempts to predict something complex like energy usage, using easier values to estimate like temperature.
 
+## Results
+
+| Performance Metrics | LSTM    | CNN     | CNN-GRU | GRU     | RNN     | SVR     | DNN     |
+| ------------------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- |
+| MAE                 | 135.138 | 151.693 | 156.006 | 175.595 | 224.093 | 568.183 | 672.941 |
+| $R^2$               | 0.998   | 0.997   | 0.997   | 0.997   | 0.995   | 0.982   | 0.971   |
+
 ## Web Integration
 
 The performance of the models are displayed on a [web app](), contrasting the models' predictions with 2024 data on energy usage
 offered [_Hydro-Québec_](https://www.hydroquebec.com/documents-data/open-data/electricity-demand-quebec/). The user can alternate between the different models and compare the predicted and actual
 charts of energy usage.
-
-## Results
-
-### Time Series Approach
-
-| Performance Metrics | LSTM    | GRU     | RNN     | CNN     | CNN-GRU |
-| ------------------- | ------- | ------- | ------- | ------- | ------- |
-| MAE                 | 135.138 | 175.595 | 224.093 | 151.693 | 156.006 |
-| $R^2$               | 0.998   | 0.997   | 0.995   | 0.997   | 0.997   |
-
-### Static Approach
-
-| Performance Metrics | SVR     | DNN     |
-| ------------------- | ------- | ------- |
-| MAE                 | 568.183 | 672.941 |
-| $R^2$               | 0.982   | 0.971   |
 
 <!-- ## Models
 
