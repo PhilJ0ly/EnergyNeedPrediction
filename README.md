@@ -15,8 +15,7 @@ This project attempts to predict something complex like energy usage, using easi
 ## Web Integration
 
 The performance of the models are displayed on a [web app](), contrasting the models' predictions with 2024 data on energy usage
-offered [_Hydro-Québec_](https://www.hydroquebec.com/documents-data/open-data/electricity-demand-quebec/). The user can alternate between the different models and compare the predicted and actual
-charts of energy usage.
+offered [_Hydro-Québec_](https://www.hydroquebec.com/documents-data/open-data/electricity-demand-quebec/). The user can alternate between the different models and compare the predicted to real-time charts of energy usage.
 
 <!-- ## Models
 
