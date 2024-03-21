@@ -188,4 +188,6 @@ new_data = {
     "scores": scores
 }
 new_json_data = json.dumps(new_data)
+
+# how to return to capture output
 print(new_json_data)
