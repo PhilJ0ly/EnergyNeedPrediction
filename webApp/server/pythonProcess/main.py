@@ -4,6 +4,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import numpy as np
+import pickle
 
 from modelClasses.dnn import neuralNet
 from modelClasses.scnn import SCNN
@@ -11,7 +12,7 @@ from modelClasses.lstm import LSTM
 from modelClasses.hyb import HYBRID
 from modelClasses.gru import GRU
 from modelClasses.rnn import RNN
-# from modelClasses.svr import SVR
+from sklearn.svm import SVR
 
 
 power = json.loads(sys.argv[1])
@@ -66,9 +67,25 @@ def wAverage(df):
 # df['Day of Week'] = df['Date/Time (UTC)'].dt.strftime("%w")
 
 # prepare data for models
-
-
 # sequential
+
+
+def df_to_Xy(df, window_size):
+    dfArr = df.to_numpy()
+    X = []
+    y = []
+    for i in range(len(dfArr)-window_size):
+        row = [r for r in dfArr[i:i+window_size]]
+
+        if (np.isnan(row).any() or np.isnan(dfArr[i+window_size][0])):
+            continue
+
+        X.append(row)
+        label = dfArr[i+window_size][0]
+        y.append(label)
+    return np.array(X), np.array(y)
+
+
 sDf = data.copy()
 day = 60*60*24
 year = 365.2425*day
@@ -89,17 +106,35 @@ column_order = ['Average Power Output (MW)'] + [
     col for col in sDf.columns if col != 'Average Power Output (MW)']
 sDf = sDf[column_order]
 
+Xs, ys = df_to_Xy(sDf, 24)
+
 # non sequential
+with open('Xscaler.pkl', 'rb') as f:
+    svrX_scaler = pickle.load(f)
+with open('yscaler.pkl', 'rb') as f:
+    svry_scaler = pickle.load(f)
+
 nsDf = data.copy()
 nsDf.dropna(inplace=True)
 nsDf.drop(columns=['Date/Time (UTC)', 'Year'], inplace=True)
 nsDf = nsDf.astype(float)
 
-X_tot = nsDf.drop(columns=["Average Power Output (MW)"]).values
-y_tot = nsDf["Average Power Output (MW)"].values
+Xns = nsDf.drop(columns=["Average Power Output (MW)"]).values
+yns = nsDf["Average Power Output (MW)"].values
 
 
 # Load models
+dnn = neuralNet(n_features=Xns.shape[1], n_outs=1, hidden_sizes=10)
+
+gru = GRU(input_size=Xs.shape[2], output_size=1, num_layers=5, hidden_size=150)
+lstm = LSTM(input_size=Xs.shape[2], output_size=1,
+            num_layers=5, hidden_size=150)
+rnn = RNN(input_size=Xs.shape[2], output_size=1, num_layers=4, hidden_size=150)
+scnn = SCNN(num_features=Xs.shape[2], output_size=1, hidden_sizes=[
+            64, 128, 32, 8], window_size=24, k_size=[3, 3], pad=[1, 1])
+hyb = HYBRID(num_features=Xs.shape[2], output_size=1, hidden_sizes=[
+             32, 64, 64, 32, 8], num_layers=3, window_size=24, k_size=[3, 3], pad=[1, 1])
+
 
 # sequential formatting
 

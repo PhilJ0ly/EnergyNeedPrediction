@@ -36,9 +36,9 @@ class neuralNet(nn.Module):
         return out
 
     def getScale(self):
-        with open('pathXscaler', 'rb') as f:
+        with open('./trainedModels/Xscaler.pkl', 'rb') as f:
             self.x_scaler = pickle.load(f)
-        with open('pathyScaler', 'rb') as f:
+        with open('./trainedModels/yscaler.pkl', 'rb') as f:
             self.y_scaler = pickle.load(f)
 
     def scaleX(self, X):
