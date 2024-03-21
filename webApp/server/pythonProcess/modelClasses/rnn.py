@@ -15,6 +15,9 @@ class RNN(nn.Module):
         self.rnn = nn.RNN(input_size, hidden_size, num_layers, batch_first=True)
         self.output_layer = nn.Linear(hidden_size, output_size)
         self.relu = nn.ReLU()
+        
+        self.means = np.array([21588.544112986925, 7.351155719146408, 2.4791096271216016e-05, 9.252163087475858e-05, -0.0017768329249686448, 0.0036191039144778535, 0.0772578073503864, -0.026802696954576655])
+        self.stds = np.array([5337.969209207278, 12.237716191415544, 0.7070774519619157, 0.7071361027073885, 0.7073399847760873, 0.7068620027194684, 0.6957247570033704, 0.7136385003150916])
 
     def forward(self, X):
         h0 = torch.zeros(self.num_layers, X.size(0), self.hidden_size) 
@@ -25,10 +28,6 @@ class RNN(nn.Module):
         out = self.output_layer(out)
         return out
     
-    def getScale(self):
-        self.means = np.array([21588.544112986925, 7.351155719146408, 2.4791096271216016e-05, 9.252163087475858e-05, -0.0017768329249686448, 0.0036191039144778535, 0.0772578073503864, -0.026802696954576655])
-        self.stds = np.array([5337.969209207278, 12.237716191415544, 0.7070774519619157, 0.7071361027073885, 0.7073399847760873, 0.7068620027194684, 0.6957247570033704, 0.7136385003150916])
-
     def scaleX(self, X):
         for i in range(self.input_size):
             X[:,:,i] = (X[:,:,i]-self.means[i])/self.stds[i]

@@ -125,15 +125,32 @@ yns = nsDf["Average Power Output (MW)"].values
 
 # Load models
 dnn = neuralNet(n_features=Xns.shape[1], n_outs=1, hidden_sizes=10)
+dnn.load_state_dict(torch.load("./trainedModels/dnn_5x5hid_relu__24-03-17_13-35.pth"))
+dnn.eval()
+
 
 gru = GRU(input_size=Xs.shape[2], output_size=1, num_layers=5, hidden_size=150)
+gru.load_state_dict(torch.load("./trainedModels/gru_5x150hid_24wind_24-03-17_16-13.pth"))
+gru.eval()
+
 lstm = LSTM(input_size=Xs.shape[2], output_size=1,
             num_layers=5, hidden_size=150)
+lstm.load_state_dict(torch.load("./trainedModels/lstm_5x150hid_24win_24-03-18_00-47.pth"))
+lstm.eval()
+
 rnn = RNN(input_size=Xs.shape[2], output_size=1, num_layers=4, hidden_size=150)
+rnn.load_state_dict(torch.load("./trainedModels/rnn_4x150hid_wind24_24-03-17_13-58.pth"))
+rnn.eval()
+
 scnn = SCNN(num_features=Xs.shape[2], output_size=1, hidden_sizes=[
             64, 128, 32, 8], window_size=24, k_size=[3, 3], pad=[1, 1])
+scnn.load_state_dict(torch.load("./trainedModels/scnn_c64-c128-l32-l8hid_24-03-17_15-52.pth"))
+scnn.eval()
+
 hyb = HYBRID(num_features=Xs.shape[2], output_size=1, hidden_sizes=[
              32, 64, 64, 32, 8], num_layers=3, window_size=24, k_size=[3, 3], pad=[1, 1])
+hyb.load_state_dict(torch.load("./trainedModels/Hybrid_c64-c128-lstm3x150-l32-l8_24-03-17_18-48,pth"))
+hyb.eval()
 
 
 # sequential formatting

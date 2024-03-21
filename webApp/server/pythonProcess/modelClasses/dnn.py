@@ -19,6 +19,11 @@ class neuralNet(nn.Module):
         self.l7 = nn.Linear(hidden_size, n_outs)
         self.relu = nn.ReLU()
 
+        with open('./trainedModels/Xscaler.pkl', 'rb') as f:
+            self.x_scaler = pickle.load(f)
+        with open('./trainedModels/yscaler.pkl', 'rb') as f:
+            self.y_scaler = pickle.load(f)
+
     def forward(self, X):
         out = self.l1(X)
         out = self.relu(out)
@@ -34,12 +39,6 @@ class neuralNet(nn.Module):
         out = self.relu(out)
         out = self.l7(out)
         return out
-
-    def getScale(self):
-        with open('./trainedModels/Xscaler.pkl', 'rb') as f:
-            self.x_scaler = pickle.load(f)
-        with open('./trainedModels/yscaler.pkl', 'rb') as f:
-            self.y_scaler = pickle.load(f)
 
     def scaleX(self, X):
         return self.x_scaler.transform(X)
