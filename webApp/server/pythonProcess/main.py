@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 import pickle
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+
 
 from modelClasses.dnn import neuralNet
 from modelClasses.scnn import SCNN
@@ -28,6 +30,7 @@ power = [detail['valeurs']['demandeTotal'] for detail in details]
 
 data = pd.DataFrame({'date': dates, 'demandeTotal': power})
 data['date'] = pd.to_datetime(data['date'])
+# Handle 0 vals
 
 # treat temps
 pop = {"MONTREAL INTL A": 3675219.0, "QUEBEC INTL A": 733156.0,
@@ -59,33 +62,8 @@ def wAverage(df):
 # concat to main data
 # df = pd.merge(dfTemp, dfPow, on='Date/Time (UTC)', how='outer')
 
-# other fields
-# df['Year'] = df['Date/Time (UTC)'].dt.year
-# df['Month'] = df['Date/Time (UTC)'].dt.month
-# df['Day'] = df['Date/Time (UTC)'].dt.day
-# df['Hour'] = df['Date/Time (UTC)'].dt.hour
-# df['Day of Week'] = df['Date/Time (UTC)'].dt.strftime("%w")
-
 # prepare data for models
 # sequential
-
-
-def df_to_Xy(df, window_size):
-    dfArr = df.to_numpy()
-    X = []
-    y = []
-    for i in range(len(dfArr)-window_size):
-        row = [r for r in dfArr[i:i+window_size]]
-
-        if (np.isnan(row).any() or np.isnan(dfArr[i+window_size][0])):
-            continue
-
-        X.append(row)
-        label = dfArr[i+window_size][0]
-        y.append(label)
-    return np.array(X), np.array(y)
-
-
 sDf = data.copy()
 day = 60*60*24
 year = 365.2425*day
@@ -106,6 +84,22 @@ column_order = ['Average Power Output (MW)'] + [
     col for col in sDf.columns if col != 'Average Power Output (MW)']
 sDf = sDf[column_order]
 
+# sequential formatting
+def df_to_Xy(df, window_size):
+    dfArr = df.to_numpy()
+    X = []
+    y = []
+    for i in range(len(dfArr)-window_size):
+        row = [r for r in dfArr[i:i+window_size]]
+
+        if (np.isnan(row).any() or np.isnan(dfArr[i+window_size][0])):
+            continue
+
+        X.append(row)
+        label = dfArr[i+window_size][0]
+        y.append(label)
+    return np.array(X), np.array(y)
+
 Xs, ys = df_to_Xy(sDf, 24)
 
 # non sequential
@@ -117,6 +111,7 @@ with open('yscaler.pkl', 'rb') as f:
 nsDf = data.copy()
 nsDf.dropna(inplace=True)
 nsDf.drop(columns=['Date/Time (UTC)', 'Year'], inplace=True)
+# add population
 nsDf = nsDf.astype(float)
 
 Xns = nsDf.drop(columns=["Average Power Output (MW)"]).values
@@ -124,6 +119,9 @@ yns = nsDf["Average Power Output (MW)"].values
 
 
 # Load models
+with open('./trainedModels/svr_bayes_rbf', 'rb') as f:
+    svr = pickle.load(f)
+
 dnn = neuralNet(n_features=Xns.shape[1], n_outs=1, hidden_sizes=10)
 dnn.load_state_dict(torch.load("./trainedModels/dnn_5x5hid_relu__24-03-17_13-35.pth"))
 dnn.eval()
@@ -152,13 +150,42 @@ hyb = HYBRID(num_features=Xs.shape[2], output_size=1, hidden_sizes=[
 hyb.load_state_dict(torch.load("./trainedModels/Hybrid_c64-c128-lstm3x150-l32-l8_24-03-17_18-48,pth"))
 hyb.eval()
 
+# normalization for svr
+X_svr = svrX_scaler.transform(np.copy(Xns))
 
-# sequential formatting
+# Get Predictions
+y_svr = svr.predict(X_svr)
+y_svr = svry_scaler.inverse_transform(y_svr.reshape(len(yns), 1)).reshape(y_svr.shape[0])
 
-# normalization (do not forget to make copys)
-
-# test
+y_dnn = dnn.test_score(X_test=Xns, scaled=False)
+y_gru = gru.test_score(X_test=Xs, scaled=False)
+y_lstm = lstm.test_score(X_test=Xs, scaled=False)
+y_rnn = rnn.test_score(X_test=Xs, scaled=False)
+y_scnn = scnn.test_score(X_test=Xs, scaled=False)
 
 # add prediction to data as columns
+data.sort_values(by='Date/Time (UTC)', inplace=True)
 
-# return data as smtg
+preds =[y_gru, y_lstm, y_rnn, y_scnn]
+names = ["GRU", "LSTM", "RNN", "SCNN"]
+for i in range(len(names)):
+    data[names[i]] = np.pad(preds[i], (len(yns)-len(preds[i]), 0), mode='constant')
+data["SVR"] = y_svr
+data["DNN"] = y_dnn
+
+# get scores
+scores = []
+for i in range(len(names)):
+    scores.append([mean_squared_error(ys, preds[i]), r2_score(ys, preds[i]), mean_absolute_error(ys, preds[i])])
+scores.append([mean_squared_error(ys, y_svr), r2_score(ys, y_svr), mean_absolute_error(ys, y_svr)])
+scores.append([mean_squared_error(ys, y_svr), r2_score(ys, y_svr), mean_absolute_error(ys, y_svr)])
+
+# return data as json
+json_data = data.to_json(orient='records')
+json_data = json.loads(json_data)
+new_data = {
+    "data": json_data,
+    "scores": scores
+}
+new_json_data = json.dumps(new_data)
+print(new_json_data)

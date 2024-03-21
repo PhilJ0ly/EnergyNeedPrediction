@@ -36,11 +36,11 @@ class GRU(nn.Module):
         y = y*self.stds[0]+self.means[0]
         return y
 
-    def test_score(self, X_test, y_test, scaled=False):
+    def test_score(self, X_test, scaled=False):
         with torch.no_grad():
             if(not scaled):
                 X_test = self.scaleX(X_test)
             outputs = self.forward(torch.from_numpy(X_test).to(torch.float32)).detach().numpy()
             y_pred = self.unscaley(outputs)
 
-            return mean_squared_error(y_test, y_pred), r2_score(y_test, y_pred), mean_absolute_error(y_test, y_pred), y_pred
+            return y_pred
