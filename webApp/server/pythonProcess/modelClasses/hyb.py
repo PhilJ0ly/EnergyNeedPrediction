@@ -1,7 +1,5 @@
 import torch
 import torch.nn as nn
-from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
-from sklearn.preprocessing import StandardScaler
 import numpy as np
 
 class HYBRID(nn.Module):

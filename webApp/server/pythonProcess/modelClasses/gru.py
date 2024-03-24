@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 import numpy as np
 
 class GRU(nn.Module):

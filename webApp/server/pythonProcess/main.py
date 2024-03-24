@@ -186,10 +186,6 @@ y_lstm = y_lstm.reshape(y_lstm.shape[0])
 y_rnn = y_rnn.reshape(y_rnn.shape[0])
 y_scnn = y_scnn.reshape(y_scnn.shape[0])
 
-print(y_svr.shape, y_dnn.shape, y_gru.shape,
-      y_lstm.shape, y_rnn.shape, y_scnn.shape)
-
-
 preds = [y_gru, y_lstm, y_rnn, y_scnn]
 names = ["GRU", "LSTM", "RNN", "SCNN"]
 for i in range(len(names)):
