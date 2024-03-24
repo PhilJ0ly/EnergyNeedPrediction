@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js"
   },
   "keywords": [],
   "author": "Philippe Joly",
@@ -13,5 +14,8 @@
     "axios": "^1.6.8",
     "child_process": "^1.0.2",
     "express": "^4.19.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }

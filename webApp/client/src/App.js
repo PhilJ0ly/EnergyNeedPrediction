@@ -7,7 +7,7 @@ function App() {
     React.useEffect(() => {
         fetch("/api")
             .then((res) => res.json())
-            .then((data) => setData(data.dateStart));
+            .then((data) => setData(data));
     }, []);
 
     return (
