@@ -63,9 +63,9 @@ app.get("/api", async (req, res) => {
             });
         });
 
-        const wet = './wet.json';
-        const pow = './pow.json';
-        let out = './out.json';
+        const wet = './data/wet.json';
+        const pow = './data/pow.json';
+        let out = './data/out.json';
         let pythonOutput;
 
         await fs.writeFile(wet, JSON.stringify(rearrangedData));
@@ -73,34 +73,34 @@ app.get("/api", async (req, res) => {
 
         const pythonProcess = spawn('python', ['pythonProcess/main.py', pow, wet]);
 
-        pythonProcess.stderr.on('data', (data) => {
-            console.error(`Python error: ${data}`);
-        });
+        // pythonProcess.stderr.on('data', (data) => {
+        //     console.error(`Python error: ${data}`);
+        // });
 
-        pythonProcess.stdout.on('data', (data) => {
-            out = data;
-        });
+        // pythonProcess.stdout.on('data', (data) => {
+        //     out = data;
+        // });
 
-        pythonProcess.on('close', (code) => {
-            if(code == 0){
-                //read from out.json
-                fs.readFile(out, (err, data) => {
-                    if(err) {
-                        console.error(err);
-                        return
-                    }
-                    pythonOutput = JSON.parse(data.toString())
-                })
-            }
+        // pythonProcess.on('close', (code) => {
+        //     if(code == 0){
+        //         //read from out.json
+        //         fs.readFile(out, (err, data) => {
+        //             if(err) {
+        //                 console.error(err);
+        //                 return
+        //             }
+        //             pythonOutput = JSON.parse(data.toString())
+        //         })
+        //     }
 
-            //delete files
-            fs.unlink(wet);
-            fs.unlink(pow);
-            fs.unlink(out);
-        });
+        //     //delete files
+        //     fs.unlink(wet);
+        //     fs.unlink(pow);
+        //     fs.unlink(out);
+        // });
 
         // Send the output of the Python script as the response
-        res.send(pythonOutput);
+        res.send('pythonOutput');
     } catch (error) {
         console.error(error);
         res.status(500).send("Internal Server Error");

@@ -17,55 +17,55 @@ from sklearn.svm import SVR
 
 
 with open(sys.argv[1], 'r') as f:
-    power = json.loads(f)
+    power = json.loads(f.read())
 with open(sys.argv[2], 'r') as f:
-    temp = json.loads(sys.argv[2])
+    temp = json.loads(f.read())
 
 # extract power values
 details = power['details']
-dates = [detail['date'] for detail in details]
-power = [detail['valeurs']['demandeTotal'] for detail in details]
+dates = []
+power = []
 
-data = pd.DataFrame({'Date/Time': dates, 'Power': power})
-data['Date/Time'] = pd.to_datetime(data['Date/Time'])
-data['Year'] = data['Date/Time (UTC)'].dt.year
-data['Month'] = data['Date/Time (UTC)'].dt.month
-data['Day'] = data['Date/Time (UTC)'].dt.day
-data['Hour'] = data['Date/Time (UTC)'].dt.hour
-data['Day of Week'] = data['Date/Time (UTC)'].dt.strftime("%w")
+# Extracting date and demandeTotal values
+for detail in details:
+    if "demandeTotal" in detail.get("valeurs", {}):
+        dates.append(detail["date"])
+        power.append(detail["valeurs"]["demandeTotal"])
 
-data['Population'] = 8450000
-# Handle 0 vals
+dfPow = pd.DataFrame({'Date/Time': dates, 'Average Power Output (MW)': power})
+dfPow['Date/Time'] = pd.to_datetime(dfPow['Date/Time'])
 
 # treat temps
-pop = {"MTL": 3675219.0, "QC": 733156.0,
-       "GAT": 271569.0, "SHE": 151157.0}
+pop = {"MTL": 0.7607414955721273, "QC": 0.15175753932695674,
+       "GAT": 0.056212652146995064, "SHE": 0.03128831295392086}
 
+dfTemp = pd.DataFrame.from_dict(temp, orient='index')
 
-def wAverage(df):
-    dfNew = pd.DataFrame(columns=['Date/Time', 'Temp (°C)'])
-    dates = df['Date/Time'].unique()
-    count = 1
-    for i in dates:
-        wAv = 0
-        totPop = 0
-        for j, row in df[df['Date/Time'] == i].iterrows():
-            if (not np.isnan(row["Temp (°C)"])):
-                wAv += pop[row["Station Name"]]*row["Temp (°C)"]
-                totPop += pop[row["Station Name"]]
-        if (totPop != 0):
-            wAv /= totPop
-        else:
-            wAv = np.nan
-        new_row = pd.DataFrame({'Date/Time': [i], 'Temp (°C)': [wAv]})
-        dfNew = pd.concat([dfNew, new_row], ignore_index=True)
-        count += 1
-    return dfNew
+# Calculate weighted average
+weighted_avg = (pop["MTL"]*dfTemp['MTL'] + pop["QC"]*dfTemp['QC'] +
+                pop["SHE"]*dfTemp['SHE'] + pop["GAT"]*dfTemp['GAT'])
 
-# get all temp values from json to dfTemp
-# apply average
+# Create DataFrame with date and weighted average columns
+result_dfTemp = pd.DataFrame(
+    {'Date/Time': dfTemp.index, 'Temp (°C)': weighted_avg})
+result_dfTemp['Date/Time'] = pd.to_datetime(result_dfTemp['Date/Time'])
+
 # concat to main data
-# df = pd.merge(dfTemp, dfPow, on='Date/Time', how='outer')
+data = pd.merge(result_dfTemp, dfPow, on='Date/Time', how='outer')
+
+# add other
+data['Year'] = data['Date/Time'].dt.year
+data['Month'] = data['Date/Time'].dt.month
+data['Day'] = data['Date/Time'].dt.day
+data['Hour'] = data['Date/Time'].dt.hour
+data['Day of Week'] = data['Date/Time'].dt.strftime("%w")
+data['Population'] = 8450000
+
+# data.to_json('weighted_average.json', orient='records')
+order = ["Date/Time",	"Temp (°C)", "Average Power Output (MW)",
+         "Year", "Month", "Day", "Hour", "Day of Week", "Population"]
+data = data[order]
+data.dropna(inplace=True)
 
 
 # prepare data for models
@@ -91,8 +91,6 @@ column_order = ['Average Power Output (MW)'] + [
 sDf = sDf[column_order]
 
 # sequential formatting
-
-
 def df_to_Xy(df, window_size):
     dfArr = df.to_numpy()
     X = []
@@ -111,16 +109,16 @@ def df_to_Xy(df, window_size):
 
 Xs, ys = df_to_Xy(sDf, 24)
 
+trained_path = './server/pythonProcess/trainedModels'
 # non sequential
-with open('Xscaler.pkl', 'rb') as f:
+with open(f'{trained_path}/Xscaler.pkl', 'rb') as f:
     svrX_scaler = pickle.load(f)
-with open('yscaler.pkl', 'rb') as f:
+with open(f'{trained_path}/yscaler.pkl', 'rb') as f:
     svry_scaler = pickle.load(f)
 
 nsDf = data.copy()
 nsDf.dropna(inplace=True)
 nsDf.drop(columns=['Date/Time', 'Year'], inplace=True)
-# add population
 nsDf = nsDf.astype(float)
 
 Xns = nsDf.drop(columns=["Average Power Output (MW)"]).values
@@ -128,41 +126,41 @@ yns = nsDf["Average Power Output (MW)"].values
 
 
 # Load models
-with open('./trainedModels/svr_bayes_rbf', 'rb') as f:
+with open(f'{trained_path}/svr_bayes_rbf', 'rb') as f:
     svr = pickle.load(f)
 
-dnn = neuralNet(n_features=Xns.shape[1], n_outs=1, hidden_sizes=10)
+dnn = neuralNet(n_features=Xns.shape[1], n_outs=1, hidden_size=10)
 dnn.load_state_dict(torch.load(
-    "./trainedModels/dnn_5x5hid_relu__24-03-17_13-35.pth"))
+    f"{trained_path}/dnn_5x5hid_relu__24-03-17_13-35.pth"))
 dnn.eval()
 
 
 gru = GRU(input_size=Xs.shape[2], output_size=1, num_layers=5, hidden_size=150)
 gru.load_state_dict(torch.load(
-    "./trainedModels/gru_5x150hid_24wind_24-03-17_16-13.pth"))
+    f"{trained_path}/gru_5x150hid_24wind_24-03-17_16-13.pth"))
 gru.eval()
 
 lstm = LSTM(input_size=Xs.shape[2], output_size=1,
             num_layers=5, hidden_size=150)
 lstm.load_state_dict(torch.load(
-    "./trainedModels/lstm_5x150hid_24win_24-03-18_00-47.pth"))
+    f"{trained_path}/lstm_5x150hid_24win_24-03-18_00-47.pth"))
 lstm.eval()
 
 rnn = RNN(input_size=Xs.shape[2], output_size=1, num_layers=4, hidden_size=150)
 rnn.load_state_dict(torch.load(
-    "./trainedModels/rnn_4x150hid_wind24_24-03-17_13-58.pth"))
+    f"{trained_path}/rnn_4x150hid_wind24_24-03-17_13-58.pth"))
 rnn.eval()
 
 scnn = SCNN(num_features=Xs.shape[2], output_size=1, hidden_sizes=[
             64, 128, 32, 8], window_size=24, k_size=[3, 3], pad=[1, 1])
 scnn.load_state_dict(torch.load(
-    "./trainedModels/scnn_c64-c128-l32-l8hid_24-03-17_15-52.pth"))
+    f"{trained_path}/scnn_c64-c128-l32-l8hid_24-03-17_15-52.pth"))
 scnn.eval()
 
 hyb = HYBRID(num_features=Xs.shape[2], output_size=1, hidden_sizes=[
              32, 64, 64, 32, 8], num_layers=3, window_size=24, k_size=[3, 3], pad=[1, 1])
 hyb.load_state_dict(torch.load(
-    "./trainedModels/Hybrid_c64-c128-lstm3x150-l32-l8_24-03-17_18-48,pth"))
+    f"{trained_path}/Hybrid_c64-c128-lstm3x150-l32-l8_24-03-17_18-48.pth"))
 hyb.eval()
 
 # normalization for svr
@@ -182,6 +180,16 @@ y_scnn = scnn.test_score(X_test=Xs, scaled=False)
 # add prediction to data as columns
 data.sort_values(by='Date/Time', inplace=True)
 
+y_dnn = y_dnn.reshape(y_dnn.shape[0])
+y_gru = y_gru.reshape(y_gru.shape[0])
+y_lstm = y_lstm.reshape(y_lstm.shape[0])
+y_rnn = y_rnn.reshape(y_rnn.shape[0])
+y_scnn = y_scnn.reshape(y_scnn.shape[0])
+
+print(y_svr.shape, y_dnn.shape, y_gru.shape,
+      y_lstm.shape, y_rnn.shape, y_scnn.shape)
+
+
 preds = [y_gru, y_lstm, y_rnn, y_scnn]
 names = ["GRU", "LSTM", "RNN", "SCNN"]
 for i in range(len(names)):
@@ -195,10 +203,10 @@ scores = []
 for i in range(len(names)):
     scores.append([mean_squared_error(ys, preds[i]), r2_score(
         ys, preds[i]), mean_absolute_error(ys, preds[i])])
-scores.append([mean_squared_error(ys, y_svr), r2_score(
-    ys, y_svr), mean_absolute_error(ys, y_svr)])
-scores.append([mean_squared_error(ys, y_svr), r2_score(
-    ys, y_svr), mean_absolute_error(ys, y_svr)])
+scores.append([mean_squared_error(yns, y_svr), r2_score(
+    yns, y_svr), mean_absolute_error(yns, y_svr)])
+scores.append([mean_squared_error(yns, y_svr), r2_score(
+    yns, y_svr), mean_absolute_error(yns, y_svr)])
 
 # return data as json
 json_data = data.to_json(orient='records')
@@ -209,5 +217,7 @@ new_data = {
 }
 new_json_data = json.dumps(new_data)
 
-# how to return to capture output
-print(new_json_data)
+# write to out
+with open('./data/out.json', 'w') as f:
+    json.dump(new_data, f)
+# print(new_json_data)

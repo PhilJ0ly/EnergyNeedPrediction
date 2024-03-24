@@ -5,7 +5,6 @@ from sklearn.preprocessing import StandardScaler
 import numpy as np
 import pickle
 
-
 class neuralNet(nn.Module):
     def __init__(self, n_features, n_outs, hidden_size):
         super(neuralNet, self).__init__()
@@ -19,9 +18,9 @@ class neuralNet(nn.Module):
         self.l7 = nn.Linear(hidden_size, n_outs)
         self.relu = nn.ReLU()
 
-        with open('./trainedModels/Xscaler.pkl', 'rb') as f:
+        with open('./server/pythonProcess/trainedModels/Xscaler.pkl', 'rb') as f:
             self.x_scaler = pickle.load(f)
-        with open('./trainedModels/yscaler.pkl', 'rb') as f:
+        with open('./server/pythonProcess/trainedModels/yscaler.pkl', 'rb') as f:
             self.y_scaler = pickle.load(f)
 
     def forward(self, X):

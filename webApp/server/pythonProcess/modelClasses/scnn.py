@@ -40,7 +40,7 @@ class SCNN(nn.Module):
         return out
     
     def scaleX(self, X):
-        for i in range(self.input_size):
+        for i in range(self.num_features):
             X[:,:,i] = (X[:,:,i]-self.means[i])/self.stds[i]
         return X
     
