@@ -196,6 +196,8 @@ data["DNN"] = y_dnn
 
 # get scores
 scores = []
+# for i in range(20):
+#     print(ys[i], preds[0][i], ys[i]-preds[0][i])
 for i in range(len(names)):
     scores.append([mean_squared_error(ys, preds[i]), r2_score(
         ys, preds[i]), mean_absolute_error(ys, preds[i])])
@@ -205,6 +207,7 @@ scores.append([mean_squared_error(yns, y_svr), r2_score(
     yns, y_svr), mean_absolute_error(yns, y_svr)])
 
 # return data as json
+data.drop(columns=["Year", "Month", "Day", "Hour", "Day of Week", "Population"], inplace=True)
 json_data = data.to_json(orient='records')
 json_data = json.loads(json_data)
 new_data = {

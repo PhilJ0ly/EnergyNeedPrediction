@@ -6,31 +6,6 @@ const fs = require('fs').promises;
 const PORT = process.env.PORT || 3001;
 const app = express();
 
-// Function to call Python script with multiple arguments
-function runPythonScript(hydroData, weatherData) {
-    return new Promise((resolve, reject) => {
-        const pythonProcess = spawn('python', ['pythonProcess/main.py', JSON.stringify(hydroData), JSON.stringify(weatherData)]);
-
-        let pythonOutput = '';
-
-        pythonProcess.stdout.on('data', (data) => {
-            pythonOutput += data.toString();
-        });
-
-        pythonProcess.stderr.on('data', (data) => {
-            console.error(`Python error: ${data}`);
-        });
-
-        pythonProcess.on('close', (code) => {
-            if (code === 0) {
-                resolve(pythonOutput);
-            } else {
-                reject(`Python process exited with code ${code}`);
-            }
-        });
-    });
-}
-
 app.get("/api", async (req, res) => {
     try {
         // Fetch data from Hydro-Québec API
@@ -71,36 +46,35 @@ app.get("/api", async (req, res) => {
         await fs.writeFile(wet, JSON.stringify(rearrangedData));
         await fs.writeFile(pow, JSON.stringify(hydroData));
 
-        const pythonProcess = spawn('python', ['pythonProcess/main.py', pow, wet]);
+        const pythonProcess = spawn('python', ['./server/pythonProcess/main.py', pow, wet]);
 
-        // pythonProcess.stderr.on('data', (data) => {
-        //     console.error(`Python error: ${data}`);
-        // });
+        pythonProcess.stderr.on('data', (data) => {
+            console.error(`Python error: ${data}`);
+        });
 
         // pythonProcess.stdout.on('data', (data) => {
         //     out = data;
         // });
 
-        // pythonProcess.on('close', (code) => {
-        //     if(code == 0){
-        //         //read from out.json
-        //         fs.readFile(out, (err, data) => {
-        //             if(err) {
-        //                 console.error(err);
-        //                 return
-        //             }
-        //             pythonOutput = JSON.parse(data.toString())
-        //         })
-        //     }
+        pythonProcess.on('close', (code) => {
+            if(code == 0){
+                //read from out.json
+                fs.readFile(out, (err, data) => {
+                    if(err) {
+                        console.error(err);
+                        return
+                    }
+                    pythonOutput = JSON.parse(data.toString())
+                })
+            }
 
-        //     //delete files
+            res.send(pythonOutput);
+
+            //delete files
         //     fs.unlink(wet);
         //     fs.unlink(pow);
-        //     fs.unlink(out);
-        // });
-
-        // Send the output of the Python script as the response
-        res.send('pythonOutput');
+        // //     fs.unlink(out);
+        });
     } catch (error) {
         console.error(error);
         res.status(500).send("Internal Server Error");
