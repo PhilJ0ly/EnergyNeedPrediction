@@ -171,11 +171,11 @@ y_svr = svr.predict(X_svr)
 y_svr = svry_scaler.inverse_transform(
     y_svr.reshape(len(yns), 1)).reshape(y_svr.shape[0])
 
-y_dnn = dnn.test_score(X_test=Xns, scaled=False)
-y_gru = gru.test_score(X_test=Xs, scaled=False)
-y_lstm = lstm.test_score(X_test=Xs, scaled=False)
-y_rnn = rnn.test_score(X_test=Xs, scaled=False)
-y_scnn = scnn.test_score(X_test=Xs, scaled=False)
+y_dnn = dnn.test_score(X_test=np.copy(Xns), scaled=False)
+y_lstm = lstm.test_score(X_test=np.copy(Xs), scaled=False)
+y_gru = gru.test_score(X_test=np.copy(Xs), scaled=False)
+y_rnn = rnn.test_score(X_test=np.copy(Xs), scaled=False)
+y_scnn = scnn.test_score(X_test=np.copy(Xs), scaled=False)
 
 # add prediction to data as columns
 data.sort_values(by='Date/Time', inplace=True)
@@ -208,12 +208,11 @@ scores.append([mean_squared_error(yns, y_svr), r2_score(
 json_data = data.to_json(orient='records')
 json_data = json.loads(json_data)
 new_data = {
-    "data": json_data,
-    "scores": scores
+    "scores": scores,
+    "data": json_data
 }
 new_json_data = json.dumps(new_data)
 
 # write to out
 with open('./data/out.json', 'w') as f:
     json.dump(new_data, f)
-# print(new_json_data)
