@@ -43,18 +43,37 @@ function App() {
         margin: { top: 5 },
     };
 
+    const formatDateTime = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleString(); // Adjust format as needed
+    };
+
     return (
         <div className="App">
             <header className="App-header">
-                <h1>GRAPH</h1>
+                <h1>Power Consumption Predictions for Québec</h1>
+                {/* {data ? ({
+                    startDate = new Date(data.data[0]["Date/Time"]);
+                    endDate = new Date(data.data[0]["Date/Time"]);
+
+                }
+                    <h2>From {new Date(data.data[0]["Date/Time"])}
+                    </h2>
+                ):(<h2>2 Day Interval</h2>)} */}
+
                 {!data ? (
                     <p>Loading...</p>
                 ) : (
+                    <>
+                    <h4>From {formatDateTime(data.data[0]["Date/Time"])} to {formatDateTime(data.data[data.data.length-1]["Date/Time"])}</h4>
                     <LineChart
                         xAxis={[
                             {
                                 dataKey: "Date/Time",
-                                valueFormatter: (value) => value.toString(),
+                                valueFormatter: (value) => {
+                                    const date = new Date(value);
+                                    return date.toLocaleTimeString();
+                                },
                             },
                         ]}
                         series={Object.keys(keyToLabel).map((key) => ({
@@ -66,6 +85,7 @@ function App() {
                         dataset={data.data}
                         {...customize}
                     />
+                    </>
                 )}
             </header>
         </div>
