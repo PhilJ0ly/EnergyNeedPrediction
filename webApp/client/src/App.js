@@ -4,6 +4,18 @@ import { LineChart } from "@mui/x-charts";
 
 function App() {
     const [data, setData] = React.useState(null);
+    const apiCalled = React.useRef(false);
+
+    React.useEffect(() => {
+        if(!apiCalled.current){
+            fetch("/api")
+            .then((res) => res.json())
+            .then((data) => {
+                apiCalled.current = true;
+                setData(data);
+            })
+        }
+    }, [apiCalled.current]);
 
     const keyToLabel = {
         real: "Average Power Output (MW)",
@@ -27,22 +39,14 @@ function App() {
 
     const customize = {
         height: 300,
-        legend: { hidden: true },
+        legend: { hidden: false },
         margin: { top: 5 },
     };
-
-    React.useEffect(() => {
-        fetch("/api")
-            .then((res) => res.json())
-            .then((data) => {
-                setData(data);
-                console.log(data)
-            })
-    }, []);
 
     return (
         <div className="App">
             <header className="App-header">
+                <h1>GRAPH</h1>
                 {!data ? (
                     <p>Loading...</p>
                 ) : (
@@ -54,7 +58,7 @@ function App() {
                             },
                         ]}
                         series={Object.keys(keyToLabel).map((key) => ({
-                            dataKey: key,
+                            dataKey: keyToLabel[key],
                             label: keyToLabel[key],
                             color: colors[key],
                             showMark: false,
