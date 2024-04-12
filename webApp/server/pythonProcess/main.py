@@ -190,14 +190,12 @@ preds = [y_gru, y_lstm, y_rnn, y_scnn]
 names = ["GRU", "LSTM", "RNN", "SCNN"]
 for i in range(len(names)):
     data[names[i]] = np.pad(
-        preds[i], (len(yns)-len(preds[i]), 0), mode='constant')
+        preds[i], (len(yns)-len(preds[i]), 0), mode='constant', constant_values=np.nan)
 data["SVR"] = y_svr
 data["DNN"] = y_dnn
 
 # get scores
 scores = []
-# for i in range(20):
-#     print(ys[i], preds[0][i], ys[i]-preds[0][i])
 for i in range(len(names)):
     scores.append([mean_squared_error(ys, preds[i]), r2_score(
         ys, preds[i]), mean_absolute_error(ys, preds[i])])
