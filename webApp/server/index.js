@@ -89,11 +89,13 @@ app.get("/api", async (req, res) => {
                         return;
                     }
                     pythonOutput = JSON.parse(data);
-                    res.send(pythonOutput);
+
                     //delete files
-                    //fs.unlink(wet);
-                    //fs.unlink(pow);
-                    //fs.unlink(out);
+                    fs.unlink(wet);
+                    fs.unlink(pow);
+                    fs.unlink(out);
+
+                    res.send(pythonOutput);
                 });
             }
         });

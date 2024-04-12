@@ -34,8 +34,10 @@ function App() {
     React.useEffect(() => {
         fetch("/api")
             .then((res) => res.json())
-            .then((data) => setData(data))
-            .then((data) => console.log(data));
+            .then((data) => {
+                setData(data);
+                console.log(data)
+            })
     }, []);
 
     return (
